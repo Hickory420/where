@@ -1,5 +1,10 @@
 # where
 Random functions that I find useful
+
+## Note
+
+Some functions are specific to my environment and therefore will not be of use to anyone else.
+
 ```
   Help:
 
