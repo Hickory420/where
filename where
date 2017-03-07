@@ -40,7 +40,8 @@ set -u
 #VERSION=1.11.3 # CR # 13/01/2016 # Replaced the use of curl with "wget -q -O -" because it's the same thing and wget is more commonly installed.
                                   # Also updated the dstat link because it appears to no longer work, so I am hosting the tar file: http://ohcp.onehotchilipepper.com.au/dstat.tar.gz
 #VERSION=1.11.4 # CR # 11/08/2016 # Replaced the tr for a sed in the network DEV interface names. Caters for Bonding and interfaces with multiple addresses.
- VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
+#VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
+ VERSION=1.11.6 # CR # 07/03/2017 # Replaced "wget -q -O -" with curl for downloading dstat 
 
 shopt -s -o errexit #nounset
 #shopt -s -o errexit nounset
@@ -283,8 +284,8 @@ function DSTAT(){
       ERRCHK $? "wget is not installed (used to download dstat)"
       [ ! -d $HOME_BIN ] && mkdir -p $HOME_BIN
       cd $HOME_BIN
-      #curl -k -L $DSTAT_LINK 2>/dev/null | tar xj
-      wget -q -O - $DSTAT_LINK 2>/dev/null | tar xz
+      curl -k -L $DSTAT_LINK 2>/dev/null | tar xz
+      #wget -q -O - $DSTAT_LINK 2>/dev/null | tar xz
       ERRCHK $? "Failed to download dstat: $DSTAT_LINK"
       #mv dstat-$DSTAT_VERSION dstat
       cd - >/dev/null
