@@ -9,7 +9,7 @@ set -u
 #VERSION=1.7.3 # CR # 20/01/2014 # Added ability to check Uniface's backup logs using CL.
                                  # Fixed the coloring issue for the DISK_DISPLAY function.
 #VERSION=1.8.0 # CR # 23/01/2014 # Added new function MAILQUEUE.
-                                 # Asks if you want to move the dead emails out of the mail queue.   
+                                 # Asks if you want to move the dead emails out of the mail queue.
 #VERSION=1.8.1 # CR # 31/01/2014 # Increased performance in the mail function.
 #VERSION=1.8.2 # CR # 17/02/2014 # Added a more noticing 100% full for disks.
 #VERSION=1.9.0 # CR # 17/02/2014 # Added new function REMOTE.
@@ -38,8 +38,9 @@ set -u
 #VERSION=1.11.1 # CR # 28/10/2015 # Fixed devision by 0 in the CORES function.
 #VERSION=1.11.2 # CR # 28/10/2015 # Removed the https:// from icanhazip.com because it started failing.
 #VERSION=1.11.3 # CR # 13/01/2016 # Replaced the use of curl with "wget -q -O -" because it's the same thing and wget is more commonly installed.
-																	# Also updated the dstat link because it appears to no longer work, so I am hosting the tar file: http://ohcp.onehotchilipepper.com.au/dstat.tar.gz
- VERSION=1.11.4 # CR # 11/08/2016 # Replaced the tr for a sed in the network DEV interface names. Caters for Bonding and interfaces with multiple addresses.
+                                  # Also updated the dstat link because it appears to no longer work, so I am hosting the tar file: http://ohcp.onehotchilipepper.com.au/dstat.tar.gz
+#VERSION=1.11.4 # CR # 11/08/2016 # Replaced the tr for a sed in the network DEV interface names. Caters for Bonding and interfaces with multiple addresses.
+ VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
 
 shopt -s -o errexit #nounset
 #shopt -s -o errexit nounset
@@ -60,7 +61,7 @@ declare ORACLE_HOME
 declare TNSNAMES
 declare -r BACKUPLOG="/uniface/1/uni_backupstatus.log"
 
-if [ -n ${ORACLE_HOME:-} ]; then 
+if [ -n ${ORACLE_HOME:-} ]; then
   [ -f "${ORACLE_HOME:-}/network/admin/tnsnames.ora" ] && TNSNAMES="${ORACLE_HOME}/network/admin/tnsnames.ora";
 elif [ -f "$ORACLE_HOME/tnsnames.ora" ]; then
   TNSNAMES="$ORACLE_HOME/tnsnames.ora"; #This one caters for saas-app1
@@ -111,7 +112,7 @@ function ONLINE(){
 function ERRCHK(){
   local -ir STATUS=$1
   local -r MSG=$2
-  if [ $STATUS -ne 0 ]; then 
+  if [ $STATUS -ne 0 ]; then
     echo $MSG
     exit $STATUS
   fi
@@ -130,20 +131,20 @@ function GET_IP(){
       local IP=$(/sbin/ifconfig "$DEV" | grep inet | grep -v inet6 | awk '{print $2}' )
       echo -en "$DEV:\t"
       if [ "$IP" ]; then
-	if echo "$IP" | grep -q addr; then
-	  echo $(echo $IP | cut -d: -f2)
+        if echo "$IP" | grep -q addr; then
+          echo $(echo $IP | cut -d: -f2)
         else
-	  echo "$IP"
-	fi
+          echo "$IP"
+        fi
       else
-	  echo "Up, but no IP address"
+          echo "Up, but no IP address"
       fi
     done
   else
     echo "Unable to execute $IFCONFIG"
     echo -e "LAN:\tUnavailable"
   fi
-    
+
   echo -en "WAN:\t"
   if ONLINE; then
     if [ $GET_IP_ARG = "all" ]; then
@@ -268,16 +269,16 @@ function REMOTE(){
 }
 
 function DSTAT(){
-  
+
   local -r HOME_BIN="$HOME/bin"
   local -r DSTAT_BIN="$HOME_BIN/dstat"
-  local -r DSTAT_VERSION="0.7.2"
+  #local -r DSTAT_VERSION="0.7.2"
   #local -r DSTAT_LINK="https://dag.wieers.com/home-made/dstat/dstat-$DSTAT_VERSION.tar.bz2"
-  local -r DSTAT_LINK="http://ohcp.onehotchilipepper.com.au/dstat.tar.gz"
-
+  #local -r DSTAT_LINK="https://github.com/dagwieers/dstat/archive/master.zip"
+  local -r DSTAT_LINK="https://github.com/dagwieers/dstat/archive/0.7.3.tar.gz"
   if [ ! -d "$DSTAT_BIN" ] ; then
     echo "dstat for this script is not installed... Installing"
-    if ONLINE; then 
+    if ONLINE; then
       which wget >/dev/null 2>&1
       ERRCHK $? "wget is not installed (used to download dstat)"
       [ ! -d $HOME_BIN ] && mkdir -p $HOME_BIN
@@ -294,7 +295,7 @@ function DSTAT(){
     fi
   fi
 
-  if [ -d "$DSTAT_BIN" ] ; then 
+  if [ -d "$DSTAT_BIN" ] ; then
     echo "You may need to expand your terminal window for this one..."
     echo "Press CTRL+c to exit"
     $DSTAT_BIN/dstat --top-bio-adv --top-childwait \
@@ -310,7 +311,7 @@ function DSTAT(){
                      --top-latency --top-latency-avg \
                      --top-mem --top-oom
   fi
-  return $?	
+  return $?
 
 }
 
@@ -389,7 +390,7 @@ function MAILQUEUE(){
       local SECONDS=`date +%s`
       local O_EMAIL_FILE=`ls -tr $MQUEUE/Qf* 2>/dev/null | head -1`
       local N_EMAIL_FILE=`ls -t  $MQUEUE/Qf* 2>/dev/null | head -1`
-      if [ -f "$O_EMAIL_FILE" -a -f "$N_EMAIL_FILE" ]; then 
+      if [ -f "$O_EMAIL_FILE" -a -f "$N_EMAIL_FILE" ]; then
         local O_AGE_SECONDS=`stat -c %Z "$O_EMAIL_FILE"`
         local N_AGE_SECONDS=`stat -c %Z "$N_EMAIL_FILE"`
         local O_EMAIL_SECONDS=`echo $(($SECONDS - $O_AGE_SECONDS))`
@@ -400,7 +401,7 @@ function MAILQUEUE(){
         local N_MSG="The newest failed email is ${N_EMAIL} Days old"
       fi
       #Getting the age of the failed emails -- STOP
-      
+
       if [ "$GOINGTO_COUNT" -gt 0 -a "$MAILQUEUE_ARG" != all -a -n "$TOTAL_FAILED_EMAILS" ]; then
         echo "$TOTAL_FAILED_EMAILS dead email(s) with $GOINGTO_COUNT unique email addresses."
         [ "$O_MSG" -a "$N_MSG" ] && echo "$O_MSG" && echo "$N_MSG"
@@ -418,7 +419,7 @@ function MAILQUEUE(){
         local DF_EMAIL_COUNT=`echo "$DF_EMAIL_LIST" | wc -l`
         local QF_SERIAL=`for qf_file in $QF_EMAIL_LIST; do echo ${qf_file:20}; done`
         local DF_SERIAL=`for df_file in $DF_EMAIL_LIST; do echo ${df_file:20}; done`
-        
+
         if [ "$QF_EMAIL_COUNT" -gt 1 ]; then
           if [ "$QF_EMAIL_COUNT" -a "$TOTAL_FAILED_EMAILS" -a "$QF_EMAIL_COUNT" -eq "$TOTAL_FAILED_EMAILS" ]; then
             echo "All $QF_EMAIL_COUNT emails in the queue are dead emails"
@@ -449,12 +450,12 @@ ${GOINGTO}" | more
           #echo "or, "
           echo -n "$MQUEUE -> ${MQUEUE}.${TODAY} [y/N]"
           read ANS
-          if [ "$ANS" = "Y" -o "$ANS" = "y" ]; then 
+          if [ "$ANS" = "Y" -o "$ANS" = "y" ]; then
             cd "$MQUEUE"
-            service sendmail stop 
+            service sendmail stop
             echo "Working... Please wait..."
             [ -d "${MQUEUE}.${TODAY}" ] || mkdir "${MQUEUE}.${TODAY}"
-            for file in $QF_SERIAL; do 
+            for file in $QF_SERIAL; do
               if [ `ls *$file 2>/dev/null | wc -l` -eq 2 ]; then
                 mv *$file "${MQUEUE}.${TODAY}"
               fi
@@ -469,7 +470,7 @@ ${GOINGTO}" | more
           fi
         fi
       fi
-      
+
     else
       echo "$MQUEUE directory does not exist."
     fi
@@ -535,7 +536,7 @@ function HELP(){
    -l | --load      Shows the average system load.
    -m | --mail      Gives information on the mail queue of the system.
    -n | --node      Get the sitecode of the server.
-   -r | --remote    Parse SSH logs to check who tried to/has logged in. 
+   -r | --remote    Parse SSH logs to check who tried to/has logged in.
    -s | --space     The space and usage info of all partitions.
    -u | --uniface   Display the Backup logging from Uniface.
    -v | --version   The version of the script and exit.
@@ -598,3 +599,4 @@ elif [ -n "$ARGS" ]; then
     shift 1
   done
 fi
+
