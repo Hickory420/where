@@ -60,7 +60,6 @@ declare -r TODAY=`date +%Y-%m-%d`
 declare -r TIME="date +%H-%M"
 declare ORACLE_HOME
 declare TNSNAMES
-declare -r BACKUPLOG="/uniface/1/uni_backupstatus.log"
 
 if [ -n ${ORACLE_HOME:-} ]; then
   [ -f "${ORACLE_HOME:-}/network/admin/tnsnames.ora" ] && TNSNAMES="${ORACLE_HOME}/network/admin/tnsnames.ora";
@@ -107,7 +106,6 @@ function CORES(){
 function ONLINE(){
   ping -c1 -w2 8.8.8.8 >/dev/null 2>&1
   return $?
-  #return 1
 }
 
 function ERRCHK(){
@@ -221,17 +219,6 @@ function DISK_CHECK(){
   fi
 }
 
-function BACKUP (){
-  local BACKUP_ARG="$1"
-  if [ -f $BACKUPLOG ]; then
-    if [ "$BACKUP_ARG" = status ]; then
-      echo; tail -n 1 $BACKUPLOG
-    else
-      tail -n 1 $BACKUPLOG | grep -v "Backup: OK"
-    fi
-  fi
-}
-
 function NODE (){
   [ ${TNSNAMES:-} ] \
   && grep $TNSNAMES -e ^[a-zA-Z] | grep -i -v -E "orcl|acr1" | cut -d\= -f1 | cut -d" " -f1 | head -n1 | tr [:upper:] [:lower:] 2>/dev/null\
@@ -284,7 +271,7 @@ function DSTAT(){
       ERRCHK $? "wget is not installed (used to download dstat)"
       [ ! -d $HOME_BIN ] && mkdir -p $HOME_BIN
       cd $HOME_BIN
-      curl -k -L $DSTAT_LINK 2>/dev/null | tar xz
+      curl -s -k -L $DSTAT_LINK | tar xz
       #wget -q -O - $DSTAT_LINK 2>/dev/null | tar xz
       ERRCHK $? "Failed to download dstat: $DSTAT_LINK"
       #mv dstat-$DSTAT_VERSION dstat
@@ -311,6 +298,8 @@ function DSTAT(){
                      --top-cputime-avg --top-io-adv \
                      --top-latency --top-latency-avg \
                      --top-mem --top-oom
+    [ $? -ne 0 ] && \
+    $DSTAT_BIN/dstat
   fi
   return $?
 
@@ -496,14 +485,6 @@ function SecondsToDaysHoursMinutesSeconds() {
   fi
 }
 
-function UNIFACE(){
-  local CL_SCRIPT=`which cl 2>/dev/null`
-  if [ -f "$CL_SCRIPT" -a -x "$CL_SCRIPT" ]; then
-    $CL_SCRIPT -s -b 1 F_BACKUP_DISPLAY
-  else
-    echo "The CL script does not exist"
-  fi
-}
 
 function WHERE_AM_I(){
   echo
@@ -527,21 +508,20 @@ function HELP(){
   Help:
 
   v$VERSION
-   where [ -b | -c | -d | -h | -m | -n | -s | -u | -v | -w ]
+    where [ -b | -c | -d | -h | -m | -n | -s | -v | -w ]
 
-   -b | --backup    Check the backup status for a failure.
-   -c | --cores     Shows information about the cores on the processor.
-   -d | --dstat     Runs a dstat on the system.
-   -h | --help      This help/usage message.
-   -i | --ipaddress Get all ip addresses on this box.
-   -l | --load      Shows the average system load.
-   -m | --mail      Gives information on the mail queue of the system.
-   -n | --node      Get the sitecode of the server.
-   -r | --remote    Parse SSH logs to check who tried to/has logged in.
-   -s | --space     The space and usage info of all partitions.
-   -u | --uniface   Display the Backup logging from Uniface.
-   -v | --version   The version of the script and exit.
-   -w | --warning   Only show partitions in the warning range without host info.
+    -b | --backup    Check the backup status for a failure.
+    -c | --cores     Shows information about the cores on the processor.
+    -d | --dstat     Runs a dstat on the system.
+    -h | --help      This help/usage message.
+    -i | --ipaddress Get all ip addresses on this box.
+    -l | --load      Shows the average system load.
+    -m | --mail      Gives information on the mail queue of the system.
+    -n | --node      Get the sitecode of the server.
+    -r | --remote    Parse SSH logs to check who tried to/has logged in.
+    -s | --space     The space and usage info of all partitions.
+    -v | --version   The version of the script and exit.
+    -w | --warning   Only show partitions in the warning range without host info.
 
   Example: You may also use multiple arguments at once.
   where -s -i -b -l
@@ -583,9 +563,6 @@ elif [ -n "$ARGS" ]; then
       ;;
       -s|--space)
         DISK_CHECK all
-      ;;
-      -u|--uniface)
-        UNIFACE
       ;;
       -v|--version)
         echo $VERSION

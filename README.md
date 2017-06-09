@@ -8,8 +8,7 @@ Some functions are specific to my environment and therefore will not be of use t
 ```
   Help:
 
-  v1.11.4
-   where [ -b | -c | -d | -h | -m | -n | -s | -u | -v | -w ]
+     where [ -b | -c | -d | -h | -m | -n | -s | -v | -w ]
 
    -b | --backup    Check the backup status for a failure.
    -c | --cores     Shows information about the cores on the processor.
@@ -21,7 +20,6 @@ Some functions are specific to my environment and therefore will not be of use t
    -n | --node      Get the sitecode of the server.
    -r | --remote    Parse SSH logs to check who tried to/has logged in.
    -s | --space     The space and usage info of all partitions.
-   -u | --uniface   Display the Backup logging from Uniface.
    -v | --version   The version of the script and exit.
    -w | --warning   Only show partitions in the warning range without host info.
 
