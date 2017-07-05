@@ -369,10 +369,7 @@ function SYSTEMLOAD(){
 
   [ "$SHOW" = yes -o "$SYSTEMLOAD_ARG" = all ] && \
   echo -e "System Load \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
-<<<<<<< Updated upstream
-=======
   
->>>>>>> Stashed changes
   if INTERACTIVE; then
     echo "Run dstat? [Y/n]"
     read ANS
