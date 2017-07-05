@@ -41,9 +41,10 @@ set -u
                                   # Also updated the dstat link because it appears to no longer work, so I am hosting the tar file: http://ohcp.onehotchilipepper.com.au/dstat.tar.gz
 #VERSION=1.11.4 # CR # 11/08/2016 # Replaced the tr for a sed in the network DEV interface names. Caters for Bonding and interfaces with multiple addresses.
 #VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
- VERSION=1.11.6 # CR # 07/03/2017 # Replaced "wget -q -O -" with curl for downloading dstat 
- VERSION=1.12.0 # CR # 09/06/2017 # Removes environment specific entries and prompts to run dstat if the load warning appears if shell is interactive (new INTERACTIVE function)
+#VERSION=1.11.6 # CR # 07/03/2017 # Replaced "wget -q -O -" with curl for downloading dstat 
+#VERSION=1.12.0 # CR # 09/06/2017 # Removes environment specific entries and prompts to run dstat if the load warning appears if shell is interactive (new INTERACTIVE function)
  VERSION=1.13.0 # CR # 09/06/2017 # Added new function FINDUSAGE
+# Now version controlled by GIT. All future version notes will be in the commit messages.
 
 shopt -s -o errexit #nounset
 #shopt -s -o errexit nounset
