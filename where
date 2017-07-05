@@ -43,6 +43,7 @@ set -u
 #VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
  VERSION=1.11.6 # CR # 07/03/2017 # Replaced "wget -q -O -" with curl for downloading dstat 
  VERSION=1.12.0 # CR # 09/06/2017 # Removes environment specific entries and prompts to run dstat if the load warning appears if shell is interactive (new INTERACTIVE function)
+ VERSION=1.13.0 # CR # 09/06/2017 # Added new function FINDUSAGE
 
 shopt -s -o errexit #nounset
 #shopt -s -o errexit nounset
@@ -87,7 +88,25 @@ function INTERACTIVE(){
     *i*)	return 0 ;;
     *)	return 1 ;;
   esac
+}
 
+function FINDUSAGE(){
+  local DIR=$1
+  local RESULT; local DU
+  local STOP="GO"
+  [ "$DIR" = "/" ] && DIR=""
+
+  until [ "$STOP" = "STOP" ]; do
+    if [ -d "$DIR/" ]; then
+      #DU=$(du --block-size=1M --summarize --one-file-system --exclude=/proc ${DIR}/* || killall "$THISSCRIPT")
+      DU=$(du --block-size=1M --summarize --one-file-system --exclude=/proc ${DIR}/* || killall "du")
+      RESULT=$(echo "$DU" | sort -nr | head -n1)
+      DIR=$(echo "$RESULT" | awk '{print $2}')
+      [ -d "$DIR/" ] && echo "$RESULT"
+    else
+      STOP="STOP"
+    fi
+  done
 }
 
 function CORES(){
@@ -245,19 +264,18 @@ function REMOTE(){
     return 2
   fi
   echo "Using $SSH_LOG*"
-  local HEADER=" Tries \tIP Address\tUser
-------- ---------------\t----"
+  local HEADER=" Tries \tIP Address\tUser\n------- ---------------\t----"
   if [ `whoami` = root ]; then
-#    if [ -r "${SSH_LOG}" ]; then
+  #if [ -r "${SSH_LOG}" ]; then
       local FAIL=`awk 'gsub(".*sshd.*Failed password for (invalid user )?", "") {print $3 "\t" $1}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n | grep -v '(invalid'`
       local GOOD=`awk 'gsub(".*sshd.*Accept", "") {print $6"\t"$4}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n`
       local FAIL_SHOW=`if [ -n "$FAIL" ]; then echo "${FAIL}" | wc -l; echo -e "$HEADER"; echo "$FAIL"; else echo 0; fi`
       local GOOD_SHOW=`if [ -n "$GOOD" ]; then echo "${GOOD}" | wc -l; echo -e "$HEADER"; echo "$GOOD"; else echo 0; fi`
       echo "Failures: $FAIL_SHOW"
       echo "Accepted: $GOOD_SHOW"
-#    else
-#      echo "${SSH_LOG} does not exist or is unreadable"
-#    fi
+    #else
+    #  echo "${SSH_LOG} does not exist or is unreadable"
+    #fi
   else
     echo "You must be root (or use sudo) to use this function."
   fi
@@ -351,6 +369,10 @@ function SYSTEMLOAD(){
 
   [ "$SHOW" = yes -o "$SYSTEMLOAD_ARG" = all ] && \
   echo -e "System Load \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
+<<<<<<< Updated upstream
+=======
+  
+>>>>>>> Stashed changes
   if INTERACTIVE; then
     echo "Run dstat? [Y/n]"
     read ANS
@@ -523,28 +545,30 @@ function HELP(){
   Help:
 
   v$VERSION
-    where [ -b | -c | -d | -h | -m | -n | -s | -v | -w ]
+  where [ -b | -c | -d | -f [PATH] | -h | -i | -l | -m | -n | -r | -s | -v | -w ]
 
-    -b | --backup    Check the backup status for a failure.
-    -c | --cores     Shows information about the cores on the processor.
-    -d | --dstat     Runs a dstat on the system.
-    -h | --help      This help/usage message.
-    -i | --ipaddress Get all ip addresses on this box.
-    -l | --load      Shows the average system load.
-    -m | --mail      Gives information on the mail queue of the system.
-    -n | --node      Get the sitecode of the server.
-    -r | --remote    Parse SSH logs to check who tried to/has logged in.
-    -s | --space     The space and usage info of all partitions.
-    -v | --version   The version of the script and exit.
-    -w | --warning   Only show partitions in the warning range without host info.
+        -b | --backup     Check the backup status for a failure.
+        -c | --cores      Shows information about the cores on the processor.
+        -d | --dstat      Runs a dstat on the system.
+  -f [PATH]| --findu [PATH]     Finds which directory is using the most space from provided PATH.
+        -h | --help       This help/usage message.
+        -i | --ipaddress  Get all ip addresses on this box.
+        -l | --load       Shows the average system load.
+        -m | --mail       Gives information on the mail queue of the system.
+        -n | --node       Get the sitecode of the server.
+        -r | --remote     Parse SSH logs to check who tried to/has logged in.
+        -s | --space      The space and usage info of all partitions.
+        -v | --version    The version of the script and exit.
+        -w | --warning    Only show partitions in the warning range without host info.
 
   Example: You may also use multiple arguments at once.
-  where -s -i -b -l
+  where -s -i -f [PATH] -l
   "
   return 1
 }
 
 ##Script
+declare THISSCRIPT=$(basename $0)
 #Handle Arguments
 declare ARGS=$@
 if [ -z "$ARGS" ]; then
@@ -559,7 +583,16 @@ elif [ -n "$ARGS" ]; then
         CORES
       ;;
       -d|--dstat)
-        DSTAT
+        DSTAT        
+      ;;
+      -f|--findu)
+        shift 1
+        if ! echo "$1" | grep -q ^-; then
+          FINDUSAGE $1
+        else
+          echo "Please provide a path. eg: where -f $HOME"
+          #shift -1
+        fi
       ;;
       -i|--ipaddress)
         GET_IP all
