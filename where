@@ -588,8 +588,8 @@ elif [ -n "$ARGS" ]; then
           FINDUSAGE $1
         else
           echo "Please provide a path. eg: where -f $HOME"
-          #shift -1
         fi
+        shift 1
       ;;
       -i|--ipaddress)
         GET_IP all
