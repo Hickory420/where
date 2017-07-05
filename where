@@ -83,7 +83,7 @@ declare -r REDBLACK="\033[41;30m"
 ##Functions
 
 function INTERACTIVE(){
-  case "$-" in
+  case $- in
     *i*)	return 0 ;;
     *)	return 1 ;;
   esac
@@ -351,9 +351,11 @@ function SYSTEMLOAD(){
 
   [ "$SHOW" = yes -o "$SYSTEMLOAD_ARG" = all ] && \
   echo -e "System Load \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
-  INTERACTIVE && echo "Run dstat? [Y/n]"
-  read ANS
-  [ "$ANS" = "N" -o "$ANS" = "n" ] || DSTAT
+  if INTERACTIVE; then
+    echo "Run dstat? [Y/n]"
+    read ANS
+    [ "$ANS" = "N" -o "$ANS" = "n" ] || DSTAT
+  fi
   #[ $ONE_CHECK -gt 1 ] && DSTAT
 
   return $?
