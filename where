@@ -230,7 +230,7 @@ function DISK_DISPLAY(){
 function DISK_CHECK(){
   local DISK_CHECK_ARG="$1"
   local DISK_SIZES
-  local -r DISK=$(df -hPT | grep -v Avail | awk '{print $7" "$6" "$5" "$2" "$3}')
+  local -r DISK=$(df -hPTl | grep -v Avail | awk '{print $7" "$6" "$5" "$2" "$3}')
   if [ $DISK_CHECK_ARG = all ]; then
     #Prints disk usage in an easy to read format.
     DISK_SIZES=$(echo "$DISK")
