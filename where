@@ -544,7 +544,6 @@ function WHERE_AM_I(){
   DISK_CHECK warn
   echo
   MAILQUEUE warn
-  BACKUP warn
   return 0
 }
 
@@ -553,9 +552,8 @@ function HELP(){
   Help:
 
   v$VERSION
-  where [ -b | -c | -d | -f [PATH] | -h | -i | -l | -m | -n | -r | -s | -v | -w ]
+  where [ -c | -d | -f [PATH] | -h | -i | -l | -m | -n | -r | -s | -v | -w ]
 
-        -b | --backup     Check the backup status for a failure.
         -c | --cores      Shows information about the cores on the processor.
         -d | --dstat      Runs a dstat on the system.
   -f [PATH]| --findu [PATH]     Finds which directory is using the most space from provided PATH.
@@ -584,9 +582,6 @@ if [ -z "$ARGS" ]; then
 elif [ -n "$ARGS" ]; then
   for ARG in $ARGS; do
     case $ARG in
-      -b|--backup)
-        BACKUP status
-      ;;
       -c|--cores)
         CORES
       ;;
