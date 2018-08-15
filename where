@@ -149,6 +149,7 @@ function GET_IP(){
 
   local DEV
   local IFCONFIG="/sbin/ifconfig"
+  local IPA="/sbin/ip"
   if [ -x "$IFCONFIG" ]; then
     local NICS=$("$IFCONFIG" -a | grep ^[a-z] | cut -d" " -f 1)
     for DEV in $NICS; do
@@ -166,8 +167,17 @@ function GET_IP(){
           echo "Up, but no IP address"
       fi
     done
+  elif [ -x "$IPA" ]; then
+    local list=$(ip a | grep -w -e inet -e "^[0-9].*:" | awk '{print $2}')
+    while read -r line; do 
+        if echo "$line" | grep -q ":"; then 
+            echo -en "${line}\t"
+        else
+            echo "$line"
+        fi
+    done < <(echo "$list")
   else
-    echo "Unable to execute $IFCONFIG"
+    echo "Unable to execute $IFCONFIG or $IPA"
     echo -e "LAN:\tUnavailable"
   fi
 
