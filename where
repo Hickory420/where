@@ -169,13 +169,13 @@ function GET_IP(){
     done
   elif [ -x "$IPA" ]; then
     local list=$(ip a | grep -w -e inet -e "^[0-9].*:" | awk '{print $2}')
-    while read -r line; do 
+    for line in $list; do
         if echo "$line" | grep -q ":"; then 
             echo -en "${line}\t"
         else
             echo "$line"
         fi
-    done < <(echo "$list")
+    done
   else
     echo "Unable to execute $IFCONFIG or $IPA"
     echo -e "LAN:\tUnavailable"
