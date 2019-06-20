@@ -1,51 +1,7 @@
 #!/bin/bash
+# shellcheck disable=1117,2164
+#,2009,2126
 set -u
-##Versions and Change Log as of v1.7.0
-#VERSION=1.7.0 # CR # 10/01/2014 # Added a loop for multiple arguments.
-                                 # Added color coded System Average Load checking.
-                                 # Added color coded Partition Warnings.
-#VERSION=1.7.1 # CR # 10/01/2014 # Added checking of the mail queue.
-#VERSION=1.7.2 # CR # 13/01/2014 # Fixed the tabbed spacing.
-#VERSION=1.7.3 # CR # 20/01/2014 # Added ability to check Uniface's backup logs using CL.
-                                 # Fixed the coloring issue for the DISK_DISPLAY function.
-#VERSION=1.8.0 # CR # 23/01/2014 # Added new function MAILQUEUE.
-                                 # Asks if you want to move the dead emails out of the mail queue.
-#VERSION=1.8.1 # CR # 31/01/2014 # Increased performance in the mail function.
-#VERSION=1.8.2 # CR # 17/02/2014 # Added a more noticing 100% full for disks.
-#VERSION=1.9.0 # CR # 17/02/2014 # Added new function REMOTE.
-                                 # Parses of the ssh logs for break in attempts.
-#VERSION=1.9.1 # CR # 24/02/2014 # Added parsing of the ssh logs for Accepted connections.
-#VERSION=1.9.2 # CR # 25/03/2014 # Extended ssh log to all instead of the current ssh log e.g.:(/var/log/secure*).
-#VERSION=1.9.3 # CR # 22/04/2014 # Fixed the 100% disk display coloring.
-#VERSION=1.9.4 # CR # 22/04/2014 # Fixed "integer expression expected" error in DISK_DISPLAY.
-#VERSION=1.9.5 # CR # 01/05/2014 # Fixed DSTAT. "--top-int" crashes on some servers.
-#VERSION=1.9.6 # CR # 10/07/2014 # Removed the restriction for checking ext[3-4] & nfs file systems for the where -s option.
-#VERSION=1.9.7 # CR # 10/07/2014 # Added https:// to the icanhazip.com. This helps alleviate proxy problems.
-                                 # and now always shows the WAN when script is launched.
-#VERSION=1.10.0 # CR # 17/07/2014 # Added two new functions ONLINE and ERRCHK. Added more error control logic.
-                                  # Also added declare's against every variable. Needs to be cleaned up...
-#VERSION=1.10.1 # CR # 17/07/2014 # Tidied up some code to make it flow nicely.
-#VERSION=1.10.2 # CR # 23/07/2014 # Forced variables to be declared with shopt -s -o errexit nounset
-#VERSION=1.10.3 # CR # 08/08/2014 # Turned off checking of public WAN IP when logging in... Too slow
-                                  # Also added https to downloading dstat. This helps alleviate proxy problems.
-#VERSION=1.10.4 # CR # 23/08/2014 # Added full path for ifconfig in GET_IP function to satisfy Cron. Plus a bit of tweakage.
-#VERSION=1.10.5 # CR # 23/08/2014 # Fixed up calling of functions and quit MAILQUEUE if mailq is handled by exim.
-#VERSION=1.10.6 # CR # 21/09/2014 # Checks and reads /var/log/auth.log as we as /var/log/secure for SSH logins.
-#VERSION=1.10.7 # CR # 05/11/2014 # Added more uname info.
-#VERSION=1.10.8 # CR # 05/11/2014 # Fixed ifconfig that had a ':' at the end of the ifcfg device name. Like in systemd Operating systems.
-#VERSION=1.10.9 # CR # 12/02/2015 # The change above broke non-systemd operating systems. Now caters for both. Ping wait is now 2 instead of 5
-#VERSION=1.11.0 # CR # 12/02/2015 # Added a CORES function to show information of the cores on the processor.
-#VERSION=1.11.1 # CR # 28/10/2015 # Fixed devision by 0 in the CORES function.
-#VERSION=1.11.2 # CR # 28/10/2015 # Removed the https:// from icanhazip.com because it started failing.
-#VERSION=1.11.3 # CR # 13/01/2016 # Replaced the use of curl with "wget -q -O -" because it's the same thing and wget is more commonly installed.
-                                  # Also updated the dstat link because it appears to no longer work, so I am hosting the tar file: http://ohcp.onehotchilipepper.com.au/dstat.tar.gz
-#VERSION=1.11.4 # CR # 11/08/2016 # Replaced the tr for a sed in the network DEV interface names. Caters for Bonding and interfaces with multiple addresses.
-#VERSION=1.11.5 # CR # 07/03/2017 # Found a working link for dstat, as well as his github. Using the tar file for the time being.
-#VERSION=1.11.6 # CR # 07/03/2017 # Replaced "wget -q -O -" with curl for downloading dstat 
-#VERSION=1.12.0 # CR # 09/06/2017 # Removes environment specific entries and prompts to run dstat if the load warning appears if shell is interactive (new INTERACTIVE function)
- VERSION=1.13.0 # CR # 09/06/2017 # Added new function FINDUSAGE
-# Now version controlled by GIT. All future version notes will be in the commit messages.
-
 shopt -s -o errexit #nounset
 #shopt -s -o errexit nounset
 
@@ -56,24 +12,17 @@ shopt -s -o errexit #nounset
 # Detect large listener logs $ORACLE_HOME/diag/tnslsnr/SITECODE/listener/trace/listener.log
 # Fix up declarations!!!
 
-##Vars
-declare -r TODAY=`date +%Y-%m-%d`
-declare -r TIME="date +%H-%M"
-declare ORACLE_HOME
-declare TNSNAMES
 
-if [ -n ${ORACLE_HOME:-} ]; then
-  [ -f "${ORACLE_HOME:-}/network/admin/tnsnames.ora" ] && TNSNAMES="${ORACLE_HOME}/network/admin/tnsnames.ora";
-elif [ -f "$ORACLE_HOME/tnsnames.ora" ]; then
-  TNSNAMES="$ORACLE_HOME/tnsnames.ora"
-fi
+##Vars
+#declare -r TODAY=`date +%Y-%m-%d`
+#declare -r TIME="date +%H-%M"
 
 declare -r HEADING="Partition\tFull\tFree\tSize\tType
 ---------\t----\t----\t----\t----"
 
 #Colors
 declare -r NORMAL="\033[00m"
-declare -r OK="\033[1;32m"
+#declare -r OK="\033[1;32m"
 declare -r WARNING="\033[1;33m"
 declare -r CRITICAL="\033[1;31m"
 declare -r REDBLACK="\033[41;30m"
@@ -86,8 +35,8 @@ declare -r REDBLACK="\033[41;30m"
 
 function INTERACTIVE(){
   case $- in
-    *i*)	return 0 ;;
-    *)	return 1 ;;
+    *i*)        return 0 ;;
+    *)  return 1 ;;
   esac
 }
 
@@ -110,16 +59,22 @@ function FINDUSAGE(){
   done
 }
 
-function CORES(){
+function MEMORY(){
+  echo "Memory Usage"
+}
 
-  local -i SOCKETS=$(grep -w "physical id" /proc/cpuinfo | sort -u | wc -l)
+function CORES(){
+  local -r MODEL
+  local -i SOCKETS CORES
+  local -ir THREADS TOTAL_CORES THREADS_PER_CORE
+  SOCKETS=$(grep -w "physical id" /proc/cpuinfo | sort -u | wc -l)
   [ "${SOCKETS}" -eq 0 ] && SOCKETS="1"
-  local -i CORES=$(grep -w "core id" /proc/cpuinfo | sort -u | wc -l)
+  CORES=$(grep -w "core id" /proc/cpuinfo | sort -u | wc -l)
   [ "${CORES}" -eq 0 ] && CORES="1"
-  local -r MODEL=$(grep -w "model name" /proc/cpuinfo | sort -u | awk -F: '{print $2}')
-  local -ir THREADS=$(grep -w "processor" /proc/cpuinfo | sort -u | wc -l)
-  local -ir TOTAL_CORES=$(echo $((${SOCKETS}*${CORES})))
-  local -ir THREADS_PER_CORE=$(echo $((${THREADS}/${TOTAL_CORES})))
+  MODEL=$(grep -w "model name" /proc/cpuinfo | sort -u | awk -F: '{print $2}')
+  THREADS=$(grep -w "processor" /proc/cpuinfo | sort -u | wc -l)
+  TOTAL_CORES=$(echo $((${SOCKETS}*${CORES})))
+  THREADS_PER_CORE=$(echo $((${THREADS}/${TOTAL_CORES})))
 
   echo -e "ModelName\t: " $MODEL
   echo -e "Sockets\t\t: " $SOCKETS
@@ -127,6 +82,23 @@ function CORES(){
   echo -e "Threads/Core\t: " $THREADS_PER_CORE
   echo -e "TotalCores\t: " $TOTAL_CORES
   echo -e "TotalThreads\t: " $THREADS
+
+  
+  ## This works, but not worying about pretty print for now.
+  #
+  #labels="ModelName:
+  #Sockets: 
+  #Cores/Socket: 
+  #Threads/Core: 
+  #TotalCores: 
+  #TotalThreads:"
+  #results="$MODEL
+  #$SOCKETS
+  #$CORES
+  #$THREADS_PER_CORE
+  #$TOTAL_CORES
+  #$THREADS" 
+  #paste <(echo "$labels") <(echo "$results")
 
 }
 
@@ -147,19 +119,19 @@ function ERRCHK(){
 function GET_IP(){
   local GET_IP_ARG="$1"
 
-  local DEV
+  local DEV NICS IP list EXTIP
   local IFCONFIG="/sbin/ifconfig"
   local IPA="/sbin/ip"
   if [ -x "$IFCONFIG" ]; then
-    local NICS=$("$IFCONFIG" -a | grep ^[a-z] | cut -d" " -f 1)
+    NICS=$("$IFCONFIG" -a | grep "^[a-z]" | cut -d" " -f 1)
     for DEV in $NICS; do
       DEV=$([ "${DEV:(-1)}" = ":" ] && echo "$DEV" | sed 's/:$//' || echo "$DEV") #If the last character is a : delete it.
       #local IP=$(/sbin/ifconfig "$DEV" | grep addr: | grep -v "inet6" | awk '{print $2}' | cut -d: -f2)
-      local IP=$(/sbin/ifconfig "$DEV" | grep inet | grep -v inet6 | awk '{print $2}' )
+      IP=$(/sbin/ifconfig "$DEV" | grep inet | grep -v inet6 | awk '{print $2}' )
       echo -en "$DEV:\t"
       if [ "$IP" ]; then
         if echo "$IP" | grep -q addr; then
-          echo $(echo $IP | cut -d: -f2)
+          echo "$IP" | cut -d: -f2
         else
           echo "$IP"
         fi
@@ -168,9 +140,9 @@ function GET_IP(){
       fi
     done
   elif [ -x "$IPA" ]; then
-    local list=$(ip a | grep -w -e inet -e "^[0-9].*:" | awk '{print $2}')
+    list=$(ip a | grep -w -e inet -e "^[0-9].*:" | awk '{print $2}')
     for line in $list; do
-        if echo "$line" | grep -q ":"; then 
+        if echo "$line" | grep -q ":"; then
             echo -en "${line}\t"
         else
             echo "$line"
@@ -183,9 +155,9 @@ function GET_IP(){
 
   echo -en "WAN:\t"
   if ONLINE; then
-    if [ $GET_IP_ARG = "all" ]; then
+    if [ "$GET_IP_ARG" = "all" ]; then
       #local EXTIP=$(curl http://icanhazip.com 2>/dev/null)
-      local EXTIP=$(wget -q -O - http://icanhazip.com 2>/dev/null)
+      EXTIP=$(wget -q -O - http://icanhazip.com 2>/dev/null)
       [ "$EXTIP" ] && echo "${EXTIP}" || echo "Failed. Err $?"
     else
       echo "Online"
@@ -208,17 +180,17 @@ function GET_IP(){
 }
 
 function DISK_DISPLAY(){
-  local LINE
+  local LINE PARTITION PERCENTS FULL
   echo -e "$HEADING"
   echo -e "$DISK_SIZES" | \
-  while read LINE ; do
-    local PARTITION=$(echo "$LINE" | awk '{print $1}')
-    local PERCENTS=$(echo "$LINE" | awk '{print $2"\t"$3"\t"$5"\t"$4}')
-    local FULL=$(echo "$PERCENTS::3" | cut -d% -f1)
-    if [ $(expr length $FULL) -ge 2 ]; then
-      if [ "${PERCENTS::2}" -ge 80 -a "${PERCENTS::2}" -lt 90 ]; then #Add Yellow color if the percentage full is between 80-89
+  while read -r LINE ; do
+    PARTITION=$(echo "$LINE" | awk '{print $1}')
+    PERCENTS=$(echo "$LINE" | awk '{print $2"\t"$3"\t"$5"\t"$4}')
+    FULL=$(echo "$PERCENTS::3" | cut -d% -f1)
+    if [ "$(expr length $FULL)" -ge 2 ]; then
+      if [ "${PERCENTS::2}" -ge 80 ] && [ "${PERCENTS::2}" -lt 90 ]; then #Add Yellow color if the percentage full is between 80-89
         local PERCENTS="${WARNING}${PERCENTS::3}${NORMAL}${PERCENTS:3}"
-      elif [ "${PERCENTS::2}" -ge 90 -a "${FULL}" -lt 100 ]; then   #Add Bright Red Color if the percentage full is between 90-99
+      elif [ "${PERCENTS::2}" -ge 90 ] && [ "${FULL}" -lt 100 ]; then   #Add Bright Red Color if the percentage full is between 90-99
         local PERCENTS="${CRITICAL}${PERCENTS::3}${NORMAL}${PERCENTS:3}"  #${REDBLACK}<<<--- Not Good!!!${NORMAL}";
       elif [ "${PERCENTS::3}" = 100 ]; then                       #Add Bright Red Color if the percentage full is 100 and make it stand out.
         local PERCENTS="${CRITICAL}${PERCENTS::4}${NORMAL}${PERCENTS:4}\t${REDBLACK}<<<--- VERY BAD${NORMAL}";
@@ -226,9 +198,10 @@ function DISK_DISPLAY(){
     fi
 
     if [ "$PARTITION" ]; then
-      local FORMAT=$(expr length $PARTITION)
+      local FORMAT PARTITION
+      FORMAT=$(expr length $PARTITION)
       if [ "$FORMAT" -ge 8 ]; then #If the Partition column is greater than or equal to 8 characters, then add 1 tabbed space.
-        local PARTITION="$(expr substr $PARTITION 1 15)" #limit the PARTITION string from 1 to 15 characters to make output look neater
+        PARTITION="$(expr substr $PARTITION 1 15)" #limit the PARTITION string from 1 to 15 characters to make output look neater
         echo -e "${PARTITION}\t${PERCENTS}"
       else
         echo -e "${PARTITION}\t\t${PERCENTS}"
@@ -241,13 +214,13 @@ function DISK_CHECK(){
   local DISK_CHECK_ARG="$1"
   local DISK_SIZES
   local -r DISK=$(df -hPTl | grep -v Avail | awk '{print $7" "$6" "$5" "$2" "$3}')
-  if [ $DISK_CHECK_ARG = all ]; then
+  if [ "$DISK_CHECK_ARG" = all ]; then
     #Prints disk usage in an easy to read format.
-    DISK_SIZES=$(echo "$DISK")
+    DISK_SIZES="$DISK"
     DISK_DISPLAY
-  elif [ $DISK_CHECK_ARG = warn ]; then
+  elif [ "$DISK_CHECK_ARG" = warn ]; then
     #Checks if disk space is between 80%-100% full, if so, show it...
-    DISK_SIZES=$(echo "$DISK" | egrep "[8-9][0-9]%|100%")
+    DISK_SIZES=$(echo "$DISK" | grep -E "[8-9][0-9]%|100%")
     if [ "$DISK_SIZES" ]; then
       DISK_DISPLAY
     else
@@ -256,10 +229,8 @@ function DISK_CHECK(){
   fi
 }
 
-function NODE (){
-  [ ${TNSNAMES:-} ] \
-  && grep $TNSNAMES -e ^[a-zA-Z] | grep -i -v -E "orcl|acr1" | cut -d\= -f1 | cut -d" " -f1 | head -n1 | tr [:upper:] [:lower:] 2>/dev/null\
-  || hostname | cut -d. -f1
+function NODE(){
+  hostname | cut -d. -f1
 }
 
 function REMOTE(){
@@ -276,12 +247,14 @@ function REMOTE(){
   fi
   echo "Using $SSH_LOG*"
   local HEADER=" Tries \tIP Address\tUser\n------- ---------------\t----"
-  if [ `whoami` = root ]; then
+  if [ "$(whoami)" = "root" ]; then
   #if [ -r "${SSH_LOG}" ]; then
-      local FAIL=`awk 'gsub(".*sshd.*Failed password for (invalid user )?", "") {print $3 "\t" $1}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n | grep -v '(invalid'`
-      local GOOD=`awk 'gsub(".*sshd.*Accept", "") {print $6"\t"$4}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n`
-      local FAIL_SHOW=`if [ -n "$FAIL" ]; then echo "${FAIL}" | wc -l; echo -e "$HEADER"; echo "$FAIL"; else echo 0; fi`
-      local GOOD_SHOW=`if [ -n "$GOOD" ]; then echo "${GOOD}" | wc -l; echo -e "$HEADER"; echo "$GOOD"; else echo 0; fi`
+      local FAIL FAIL_SHOW
+      local GOOD GOOD_SHOW
+      FAIL=$(awk 'gsub(".*sshd.*Failed password for (invalid user )?", "") {print $3 "\t" $1}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n | grep -v '(invalid')
+      GOOD=$(awk 'gsub(".*sshd.*Accept", "") {print $6"\t"$4}' ${SSH_LOG}* | sort -k1,1 -k2n | uniq -c | sort -n)
+      FAIL_SHOW=$(if [ -n "$FAIL" ]; then echo "${FAIL}" | wc -l; echo -e "$HEADER"; echo "$FAIL"; else echo 0; fi)
+      GOOD_SHOW=$(if [ -n "$GOOD" ]; then echo "${GOOD}" | wc -l; echo -e "$HEADER"; echo "$GOOD"; else echo 0; fi)
       echo "Failures: $FAIL_SHOW"
       echo "Accepted: $GOOD_SHOW"
     #else
@@ -305,7 +278,7 @@ function DSTAT(){
     if ONLINE; then
       which wget >/dev/null 2>&1
       ERRCHK $? "wget is not installed (used to download dstat)"
-      [ ! -d $HOME_BIN ] && mkdir -p $HOME_BIN
+      [ ! -d "$HOME_BIN" ] && mkdir -p "$HOME_BIN"
       cd $HOME_BIN
       curl -s -k -L $DSTAT_LINK | tar xz
       #wget -q -O - $DSTAT_LINK 2>/dev/null | tar xz
@@ -349,21 +322,24 @@ function SYSTEMLOAD(){
   local FIVE
   local FIFTEEN
   local SHOW
-  [ $PROCFILE ] && LOAD=`cat $PROCFILE | cut -d\  -f1-3` || echo "$PROCFILE does not exist. Cannot show system load averages."
+  [ $PROCFILE ] && LOAD=$(cut -d\  -f1-3 < "$PROCFILE" ) || echo "$PROCFILE does not exist. Cannot show system load averages."
   if [ "$LOAD" ]; then
     #Want to use AWK to assign these variables in one command.
-    ONE=`echo $LOAD | cut -d" " -f1`
-    FIVE=`echo $LOAD | cut -d" " -f2`
-    FIFTEEN=`echo $LOAD | cut -d" " -f3`
+    ONE=$(echo "$LOAD" | cut -d" " -f1)
+    FIVE=$(echo "$LOAD" | cut -d" " -f2)
+    FIFTEEN=$(echo "$LOAD" | cut -d" " -f3)
   else
     echo "$PROCFILE contains nothing." && exit 1
   fi
 
-  local -i ONE_CHECK=`echo "${ONE}"|cut -d. -f1`
-  local -i FIVE_CHECK=`echo "${FIVE}"|cut -d. -f1`
-  local -i FIFTEEN_CHECK=`echo "${FIFTEEN}"|cut -d. -f1`
-  local CPU_PERCENTAGE
   local ANS
+  local -i ONE_CHECK FIVE_CHECK FIFTEEN_CHECK
+  local CPU_PERCENTAGE
+  ONE_CHECK=$(echo "${ONE}"|cut -d. -f1)
+  FIVE_CHECK=$(echo "${FIVE}"|cut -d. -f1)
+  FIFTEEN_CHECK=$(echo "${FIFTEEN}"|cut -d. -f1)
+  CPU_PERCENTAGE=$(ps -A -o pcpu | grep -v -e "%" -e "0.0" | awk '{sum += $1} END {print sum"%"}')
+  [ "${CPU_PERCENTAGE}" = "%" ] && CPU_PERCENTAGE="0%"
   #Setting colors
   SHOW="no"
 
@@ -379,16 +355,13 @@ function SYSTEMLOAD(){
   elif [ $FIFTEEN_CHECK -gt 1 ]; then FIFTEEN="${CRITICAL}${FIFTEEN}${NORMAL}"; SHOW="yes";
   fi
 
-  CPU_PERCENTAGE=$(ps -A -o pcpu | grep -v -e "%" -e "0.0" | awk '{sum += $1} END {print sum"%"}')
-  [ "${CPU_PERCENTAGE}" = "%" ] && CPU_PERCENTAGE="0%"
-
-  [ "$SHOW" = yes -o "$SYSTEMLOAD_ARG" = all ] && \
+  [ "$SHOW" = yes ] || [ "$SYSTEMLOAD_ARG" = all ] && \
   echo -e "System Load: ${CPU_PERCENTAGE} \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
-  
+
   if INTERACTIVE; then
     echo "Run dstat? [Y/n]"
-    read ANS
-    [ "$ANS" = "N" -o "$ANS" = "n" ] || DSTAT
+    read -r ANS
+    [ "$ANS" = "N" ] || [ "$ANS" = "n" ] || DSTAT
   fi
   #[ $ONE_CHECK -gt 1 ] && DSTAT
 
@@ -397,16 +370,17 @@ function SYSTEMLOAD(){
 
 function MAILQUEUE(){
   local MAILQUEUE_ARG=$1
-  if [ `whoami` = root ]; then
+  local TOTAL_FAILED_EMAILS LIST GOINGTO GOINGTO_COUNT
+  if [ "$(whoami)" = "root" ]; then
     local MQUEUE="/var/spool/mqueue"
     #GOINGTO=`mailq -qL | grep @ | grep -v -i deferred | sort | tr [:upper:] [:lower:] | uniq | awk '{print $1}'`
     if info mailq 2>/dev/null | cat - | head | grep -iq exim; then return 1; fi
-    local TOTAL_FAILED_EMAILS=`mailq -qL | grep requests: | cut -d" " -f 3 | grep -v ^0`
-    [ "$TOTAL_FAILED_EMAILS" ] || local TOTAL_FAILED_EMAILS=0
+    TOTAL_FAILED_EMAILS=$(mailq -qL | grep requests: | cut -d" " -f 3 | grep -v ^0)
+    [ "$TOTAL_FAILED_EMAILS" ] || TOTAL_FAILED_EMAILS=0
     if [ -d "$MQUEUE" ]; then
-      local LIST=`find $MQUEUE -type f`
-      local GOINGTO=`grep To:.*@ $MQUEUE/Qf* 2>/dev/null | cut -d" " -f2 | sed -e 's/<//g' -e 's/>//g' | sort | tr [:upper:] [:lower:] | uniq -c | sort -nr`
-      local GOINGTO_COUNT=`echo "$GOINGTO" | grep @ | wc -l`
+      LIST=$(find $MQUEUE -type f)
+      GOINGTO=$(grep "To:.*@" $MQUEUE/Qf* 2>/dev/null | cut -d" " -f2 | sed -e 's/<//g' -e 's/>//g' | sort | tr "[:upper:]" "[:lower:]" | uniq -c | sort -nr)
+      GOINGTO_COUNT=$(echo "$GOINGTO" | grep -c @)
       #COMINGFROM=`grep From:.* $MQUEUE/Qf* 2>/dev/null | cut -d: -f3`
       #TO_FROM_LIST="/tmp/tfl"
       #rm $TO_FROM_LIST 2>/dev/null
@@ -426,41 +400,49 @@ function MAILQUEUE(){
       #fi
       #exit
       # Getting the age of the failed emails -- START
-      local SECONDS=`date +%s`
-      local O_EMAIL_FILE=`ls -tr $MQUEUE/Qf* 2>/dev/null | head -1`
-      local N_EMAIL_FILE=`ls -t  $MQUEUE/Qf* 2>/dev/null | head -1`
-      if [ -f "$O_EMAIL_FILE" -a -f "$N_EMAIL_FILE" ]; then
-        local O_AGE_SECONDS=`stat -c %Z "$O_EMAIL_FILE"`
-        local N_AGE_SECONDS=`stat -c %Z "$N_EMAIL_FILE"`
-        local O_EMAIL_SECONDS=`echo $(($SECONDS - $O_AGE_SECONDS))`
-        local N_EMAIL_SECONDS=`echo $(($SECONDS - $N_AGE_SECONDS))`
-        local O_EMAIL=`echo $(($O_EMAIL_SECONDS/86400))`
-        local N_EMAIL=`echo $(($N_EMAIL_SECONDS/86400))`
-        local O_MSG="The oldest failed email is ${O_EMAIL} Days old"
-        local N_MSG="The newest failed email is ${N_EMAIL} Days old"
+      local SECONDS 
+      local O_EMAIL_FILE O_AGE_SECONDS O_EMAIL_SECONDS O_EMAIL O_MSG
+      local N_EMAIL_FILE N_AGE_SECONDS N_EMAIL_SECONDS N_EMAIL N_MSG
+      SECONDS=$(date +%s)
+      O_EMAIL_FILE=$(ls -tr $MQUEUE/Qf* 2>/dev/null | head -1)
+      N_EMAIL_FILE=$(ls -t  $MQUEUE/Qf* 2>/dev/null | head -1)
+      if [ -f "$O_EMAIL_FILE" ] && [ -f "$N_EMAIL_FILE" ]; then
+        O_AGE_SECONDS=$(stat -c %Z "$O_EMAIL_FILE")
+        N_AGE_SECONDS=$(stat -c %Z "$N_EMAIL_FILE")
+        O_EMAIL_SECONDS=$(("$SECONDS" - "$O_AGE_SECONDS"))
+        N_EMAIL_SECONDS=$(("$SECONDS" - "$N_AGE_SECONDS"))
+        O_EMAIL=$(("$O_EMAIL_SECONDS"/86400))
+        N_EMAIL=$(("$N_EMAIL_SECONDS"/86400))
+        O_MSG="The oldest failed email is ${O_EMAIL} Days old"
+        N_MSG="The newest failed email is ${N_EMAIL} Days old"
       fi
       # Getting the age of the failed emails -- STOP
 
-      if [ "$GOINGTO_COUNT" -gt 0 -a "$MAILQUEUE_ARG" != all -a -n "$TOTAL_FAILED_EMAILS" ]; then
+      if [ "$GOINGTO_COUNT" -gt 0 ] && [ "$MAILQUEUE_ARG" != all ] && [ -n "$TOTAL_FAILED_EMAILS" ]; then
         echo "$TOTAL_FAILED_EMAILS dead email(s) with $GOINGTO_COUNT unique email addresses."
-        [ "$O_MSG" -a "$N_MSG" ] && echo "$O_MSG" && echo "$N_MSG"
+        [ "$O_MSG" ] && [ "$N_MSG" ] && echo "$O_MSG" && echo "$N_MSG"
       fi
       #List everything.
       if [ "$MAILQUEUE_ARG" = all ]; then
         #qf_EMAIL_COUNT=`ls "$MQUEUE"/qf* 2>/dev/null | wc -l`
         #QF_EMAIL_COUNT=`ls "$MQUEUE"/Qf* 2>/dev/null | wc -l`
         #DF_EMAIL_COUNT=`ls "$MQUEUE"/df* 2>/dev/null | wc -l`
-        local qf_EMAIL_LIST=`echo "$LIST" | grep $MQUEUE/qf 2>/dev/null`
-        local QF_EMAIL_LIST=`echo "$LIST" | grep $MQUEUE/Qf 2>/dev/null`
-        local DF_EMAIL_LIST=`echo "$LIST" | grep $MQUEUE/df 2>/dev/null`
-        local qf_EMAIL_COUNT=`echo "$qf_EMAIL_LIST" | wc -l`
-        local QF_EMAIL_COUNT=`echo "$QF_EMAIL_LIST" | wc -l`
-        local DF_EMAIL_COUNT=`echo "$DF_EMAIL_LIST" | wc -l`
-        local QF_SERIAL=`for qf_file in $QF_EMAIL_LIST; do echo ${qf_file:20}; done`
-        local DF_SERIAL=`for df_file in $DF_EMAIL_LIST; do echo ${df_file:20}; done`
+        local qf_EMAIL_LIST qf_EMAIL_COUNT
+        local QF_EMAIL_LIST QF_EMAIL_COUNT
+        local DF_EMAIL_LIST DF_EMAIL_COUNT
+        local QF_SERIAL DF_SERIAL
+        local DIFF LS_DIFF
+        qf_EMAIL_LIST=$(echo "$LIST" | grep $MQUEUE/qf 2>/dev/null)
+        QF_EMAIL_LIST=$(echo "$LIST" | grep $MQUEUE/Qf 2>/dev/null)
+        DF_EMAIL_LIST=$(echo "$LIST" | grep $MQUEUE/df 2>/dev/null)
+        qf_EMAIL_COUNT=$(echo "$qf_EMAIL_LIST" | wc -l)
+        QF_EMAIL_COUNT=$(echo "$QF_EMAIL_LIST" | wc -l)
+        DF_EMAIL_COUNT=$(echo "$DF_EMAIL_LIST" | wc -l)
+        QF_SERIAL=$(for qf_file in $QF_EMAIL_LIST; do echo ${qf_file:20}; done)
+        DF_SERIAL=$(for df_file in $DF_EMAIL_LIST; do echo ${df_file:20}; done)
 
         if [ "$QF_EMAIL_COUNT" -gt 1 ]; then
-          if [ "$QF_EMAIL_COUNT" -a "$TOTAL_FAILED_EMAILS" -a "$QF_EMAIL_COUNT" -eq "$TOTAL_FAILED_EMAILS" ]; then
+          if [ "$QF_EMAIL_COUNT" ] && [ "$TOTAL_FAILED_EMAILS" ] && [ "$QF_EMAIL_COUNT" -eq "$TOTAL_FAILED_EMAILS" ]; then
             echo "All $QF_EMAIL_COUNT emails in the queue are dead emails"
             echo "and none are queued to go out."
           elif [ "$QF_EMAIL_COUNT" -ne "$DF_EMAIL_COUNT" ]; then
@@ -469,8 +451,8 @@ function MAILQUEUE(){
             echo "There are $QF_EMAIL_COUNT Queue files and $DF_EMAIL_COUNT Data files..."
             echo "This isn't exactly normal..."
             echo "The orphan files are:"
-            local DIFF=`diff <(echo "$QF_SERIAL") <(echo "$DF_SERIAL") | awk '{print $2}'`
-            local LS_DIFF=`for file in $DIFF; do ls *$file; done`
+            DIFF=$(diff <(echo "$QF_SERIAL") <(echo "$DF_SERIAL") | awk '{print $2}')
+            LS_DIFF=$(for file in $DIFF; do ls *$file; done)
             echo "$LS_DIFF"
             cd - >/dev/null
           else
@@ -482,20 +464,19 @@ function MAILQUEUE(){
         fi
         if [ "$TOTAL_FAILED_EMAILS" -gt 0 ]; then
           echo
-          read -p "Press Enter to see a list of email addresses"
-          echo "They were intended for:
-${GOINGTO}" | more
+          read -pr "Press Enter to see a list of email addresses"
+          echo -e "They were intended for:\n${GOINGTO}" | more
           echo "Would you like to move all failed emails from"
           #echo "or, "
-          echo -n "$MQUEUE -> ${MQUEUE}.${TODAY} [y/N]"
-          read ANS
-          if [ "$ANS" = "Y" -o "$ANS" = "y" ]; then
+          echo -n "$MQUEUE -> ${MQUEUE}.${TODAY} [y/N]: "
+          read -r ANS
+          if [ "$ANS" = "Y" ] || [ "$ANS" = "y" ]; then
             cd "$MQUEUE"
             service sendmail stop
             echo "Working... Please wait..."
             [ -d "${MQUEUE}.${TODAY}" ] || mkdir "${MQUEUE}.${TODAY}"
             for file in $QF_SERIAL; do
-              if [ `ls *$file 2>/dev/null | wc -l` -eq 2 ]; then
+              if [ $(ls *$file 2>/dev/null | wc -l) -eq 2 ]; then
                 mv *$file "${MQUEUE}.${TODAY}"
               fi
             done
@@ -513,27 +494,26 @@ ${GOINGTO}" | more
     else
       echo "$MQUEUE directory does not exist."
     fi
-  elif [ `whoami` != root -a "$MAILQUEUE_ARG" = all ]; then
+  elif [ "$(whoami)" != "root" ] && [ "$MAILQUEUE_ARG" = "all" ]; then
     echo "You must run this switch as root"
     return 1
   fi
 }
 
-function SecondsToDaysHoursMinutesSeconds() {
+function SecondsToDaysHoursMinutesSeconds(){
   local seconds=$1
-  local days=$(($seconds/86400))
-  local seconds=$(($seconds-($days*86400) ))
-  local hours=$(($seconds/3600))
-  local seconds=$((seconds-($hours*3600) ))
-  local minutes=$(($seconds/60))
-  local seconds=$(( $seconds-($minutes*60) ))
-  if [ $2 = "OLD" ]; then
+  local days=$(("${seconds}"/86400))
+  local seconds=$(("${seconds}"-("${days}"*86400) ))
+  local hours=$(("${seconds}"/3600))
+  local seconds=$((seconds-("${hours}"*3600) ))
+  local minutes=$(("${seconds}"/60))
+  local seconds=$(( "${seconds}"-("${minutes}"*60) ))
+  if [ "$2" = "OLD" ]; then
     echo "The oldest email is ${days}D ${hours}H ${minutes}M ${seconds}S old"
-  elif [ $2 = "NEW" ]; then
+  elif [ "$2" = "NEW" ]; then
     echo "The newest email is ${days}D ${hours}H ${minutes}M ${seconds}S old"
   fi
 }
-
 
 function WHERE_AM_I(){
   echo
@@ -555,7 +535,6 @@ function HELP(){
   echo "
   Help:
 
-  v$VERSION
   where [ -c | -d | -f [PATH] | -h | -i | -l | -m | -n | -r | -s | -v | -w ]
 
         -c | --cores      Shows information about the cores on the processor.
@@ -568,7 +547,6 @@ function HELP(){
         -n | --node       Get the sitecode of the server.
         -r | --remote     Parse SSH logs to check who tried to/has logged in.
         -s | --space      The space and usage info of all partitions.
-        -v | --version    The version of the script and exit.
         -w | --warning    Only show partitions in the warning range without host info.
 
   Example: You may also use multiple arguments at once.
@@ -578,7 +556,7 @@ function HELP(){
 }
 
 ##Script
-declare THISSCRIPT=$(basename $0)
+#declare THISSCRIPT=$(basename $0)
 #Handle Arguments
 declare ARGS=$@
 if [ -z "$ARGS" ]; then
@@ -590,14 +568,15 @@ elif [ -n "$ARGS" ]; then
         CORES
       ;;
       -d|--dstat)
-        DSTAT        
+        DSTAT
       ;;
       -f|--findu)
         shift 1
-        if ! echo "$1" | grep -q ^-; then
-          FINDUSAGE $1
+        declare finduPath="${1-${PWD}}"
+        if ! echo "$finduPath" | grep -q ^-; then
+          FINDUSAGE "$finduPath"
         else
-          echo "Please provide a path. eg: where -f $HOME"
+          echo "Please provide a path after -f. Otherwise your current directory will be used."
         fi
         shift 1
       ;;
@@ -619,10 +598,6 @@ elif [ -n "$ARGS" ]; then
       -s|--space)
         DISK_CHECK all
       ;;
-      -v|--version)
-        echo $VERSION
-        exit $?
-      ;;
       -w|--warning)
         DISK_CHECK warn
       ;;
@@ -632,4 +607,3 @@ elif [ -n "$ARGS" ]; then
     shift 1
   done
 fi
-
