@@ -322,7 +322,7 @@ function SYSTEMLOAD(){
   local FIVE
   local FIFTEEN
   local SHOW
-  [ $PROCFILE ] && LOAD=$(cut -d\  -f1-3 < "$PROCFILE" ) || echo "$PROCFILE does not exist. Cannot show system load averages."
+  [ -f $PROCFILE ] && LOAD=$(cut -d\  -f1-3 < "$PROCFILE" ) || echo "$PROCFILE does not exist. Cannot show system load averages."
   if [ "$LOAD" ]; then
     #Want to use AWK to assign these variables in one command.
     ONE=$(echo "$LOAD" | cut -d" " -f1)
