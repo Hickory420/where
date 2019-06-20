@@ -362,6 +362,7 @@ function SYSTEMLOAD(){
   local -i ONE_CHECK=`echo "${ONE}"|cut -d. -f1`
   local -i FIVE_CHECK=`echo "${FIVE}"|cut -d. -f1`
   local -i FIFTEEN_CHECK=`echo "${FIFTEEN}"|cut -d. -f1`
+  local CPU_PERCENTAGE
   local ANS
   #Setting colors
   SHOW="no"
@@ -378,8 +379,11 @@ function SYSTEMLOAD(){
   elif [ $FIFTEEN_CHECK -gt 1 ]; then FIFTEEN="${CRITICAL}${FIFTEEN}${NORMAL}"; SHOW="yes";
   fi
 
+  CPU_PERCENTAGE=$(ps -A -o pcpu | grep -v -e "%" -e "0.0" | awk '{sum += $1} END {print sum"%"}')
+  [ "${CPU_PERCENTAGE}" = "%" ] && CPU_PERCENTAGE="0%"
+
   [ "$SHOW" = yes -o "$SYSTEMLOAD_ARG" = all ] && \
-  echo -e "System Load \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
+  echo -e "System Load: ${CPU_PERCENTAGE} \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
   
   if INTERACTIVE; then
     echo "Run dstat? [Y/n]"
