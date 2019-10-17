@@ -1,5 +1,9 @@
 #!/bin/bash
+<<<<<<< HEAD
 # shellcheck disable=1117,2164
+=======
+# shellcheck disable=1117
+>>>>>>> dev
 #,2009,2126
 set -u
 shopt -s -o errexit #nounset
@@ -62,6 +66,11 @@ function FINDUSAGE(){
 function MEMORY(){
   echo "Memory Usage"
 }
+<<<<<<< HEAD
+=======
+
+function CORES(){
+>>>>>>> dev
 
 function CORES(){
   local -r MODEL
@@ -322,7 +331,11 @@ function SYSTEMLOAD(){
   local FIVE
   local FIFTEEN
   local SHOW
+<<<<<<< HEAD
   [ -f $PROCFILE ] && LOAD=$(cut -d\  -f1-3 < "$PROCFILE" ) || echo "$PROCFILE does not exist. Cannot show system load averages."
+=======
+  [ $PROCFILE ] && LOAD=$(cut -d\  -f1-3 < "$PROCFILE" ) || echo "$PROCFILE does not exist. Cannot show system load averages."
+>>>>>>> dev
   if [ "$LOAD" ]; then
     #Want to use AWK to assign these variables in one command.
     ONE=$(echo "$LOAD" | cut -d" " -f1)
@@ -339,7 +352,10 @@ function SYSTEMLOAD(){
   FIVE_CHECK=$(echo "${FIVE}"|cut -d. -f1)
   FIFTEEN_CHECK=$(echo "${FIFTEEN}"|cut -d. -f1)
   CPU_PERCENTAGE=$(ps -A -o pcpu | grep -v -e "%" -e "0.0" | awk '{sum += $1} END {print sum"%"}')
+<<<<<<< HEAD
   [ "${CPU_PERCENTAGE}" = "%" ] && CPU_PERCENTAGE="0%"
+=======
+>>>>>>> dev
   #Setting colors
   SHOW="no"
 
@@ -356,7 +372,11 @@ function SYSTEMLOAD(){
   fi
 
   [ "$SHOW" = yes ] || [ "$SYSTEMLOAD_ARG" = all ] && \
+<<<<<<< HEAD
   echo -e "System Load: ${CPU_PERCENTAGE} \n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
+=======
+  echo -e "System Load: ${CPU_PERCENTAGE}\n1min\t5min\t15min \n${ONE}\t${FIVE}\t${FIFTEEN}"
+>>>>>>> dev
 
   if INTERACTIVE; then
     echo "Run dstat? [Y/n]"
@@ -607,3 +627,9 @@ elif [ -n "$ARGS" ]; then
     shift 1
   done
 fi
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> dev
