@@ -406,10 +406,10 @@ function MAILQUEUE(){
       if [ -f "$O_EMAIL_FILE" ] && [ -f "$N_EMAIL_FILE" ]; then
         O_AGE_SECONDS=$(stat -c %Z "$O_EMAIL_FILE")
         N_AGE_SECONDS=$(stat -c %Z "$N_EMAIL_FILE")
-        O_EMAIL_SECONDS=$(("$SECONDS" - "$O_AGE_SECONDS"))
-        N_EMAIL_SECONDS=$(("$SECONDS" - "$N_AGE_SECONDS"))
-        O_EMAIL=$(("$O_EMAIL_SECONDS"/86400))
-        N_EMAIL=$(("$N_EMAIL_SECONDS"/86400))
+        O_EMAIL_SECONDS=$(($SECONDS - $O_AGE_SECONDS))
+        N_EMAIL_SECONDS=$(($SECONDS - $N_AGE_SECONDS))
+        O_EMAIL=$(($O_EMAIL_SECONDS/86400))
+        N_EMAIL=$(($N_EMAIL_SECONDS/86400))
         O_MSG="The oldest failed email is ${O_EMAIL} Days old"
         N_MSG="The newest failed email is ${N_EMAIL} Days old"
       fi
